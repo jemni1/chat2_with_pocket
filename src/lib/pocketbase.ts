@@ -1,7 +1,7 @@
 // src/lib/pocketbase.ts
 import PocketBase from 'pocketbase'
 
-const pb = new PocketBase('http://127.0.0.1:8090') // ou ton URL PB
+const pb = new PocketBase('https://pocketbase-backend-4740.onrender.com');
 
 // Optionnel mais utile : réactiver la session depuis le localStorage
 if (typeof window !== 'undefined') {
