@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import pb from '@/lib/pocketbase'
 import type { RecordSubscription } from 'pocketbase'
+import { useRouter } from 'next/navigation'
 
 interface Message {
   id: string
@@ -17,12 +18,13 @@ export default function ChatPage() {
   const [receiverId, setReceiverId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const router = useRouter()
 
   // 1. Obtenir l'utilisateur connecté et l'autre utilisateur
   useEffect(() => {
     const user = pb.authStore.model
     if (!pb.authStore.isValid || !user) {
-      window.location.href = '/login'
+      router.push('/login')
     } else {
       setUserId(user.id)
       pb.collection('users')
@@ -94,42 +96,30 @@ export default function ChatPage() {
     // Pas besoin de recharger les messages manuellement car temps réel est actif
   }
 
+  const handleLogout = () => {
+    pb.authStore.clear()
+    localStorage.removeItem('pb_auth')
+    document.cookie = 'pb_auth=; Max-Age=0; path=/;';
+    router.push('/login')
+  }
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h1 className="text-2xl font-bold mb-4 text-center">Discussion privée</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Discussion privée</h1>
+        <button onClick={handleLogout} className="text-red-600 hover:underline">Se déconnecter</button>
+      </div>
 
       <div className="h-80 overflow-y-auto mb-4 border p-4 rounded bg-gray-100">
         {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={`mb-2 ${
-              msg.sender_id === userId ? 'text-right text-blue-700' : 'text-left text-gray-800'
-            }`}
-          >
-            <span className="inline-block bg-white px-4 py-2 rounded shadow">
-              {msg.content}
-            </span>
+          <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right text-blue-700' : 'text-left text-gray-800'}`}>
+            <span className="inline-block bg-white px-4 py-2 rounded shadow">{msg.content}</span>
           </div>
         ))}
       </div>
 
       <div className="flex gap-2">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={e => setNewMessage(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') sendMessage()
-          }}
-          className="flex-grow px-4 py-2 border rounded"
-          placeholder="Votre message..."
-        />
-        <button
-          onClick={sendMessage}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Envoyer
-        </button>
+        <input type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} className="flex-grow px-4 py-2 border rounded" placeholder="Votre message..." />
+        <button onClick={sendMessage} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Envoyer</button>
       </div>
     </div>
   )

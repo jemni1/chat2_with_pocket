@@ -18,6 +18,7 @@ export default function LoginPage() {
       console.log('👤 Utilisateur connecté :', pb.authStore.model)
 
       pb.authStore.save(pb.authStore.token, pb.authStore.model)
+      document.cookie = `pb_auth=${pb.authStore.token}; path=/;`;
 
       router.push('/chat')
     } catch (err) {
