@@ -28,7 +28,7 @@ export default function ChatPage() {
     } else {
       setUserId(user.id)
       pb.collection('users')
-        .getFullList({ sort: '-created' }) // récupérer tous les users
+        .getFullList({ sort: '-created',requestKey: null }) // récupérer tous les users
         .then(users => {
           const otherUser = users.find(u => u.id !== user.id)
           if (otherUser) setReceiverId(otherUser.id)
@@ -47,6 +47,7 @@ export default function ChatPage() {
           (sender_id='${receiverId}' && receiver_id='${userId}')
         )`,
         sort: 'created',
+        requestKey: null,
       })
 
       setMessages(result)
